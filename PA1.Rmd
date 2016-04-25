@@ -1,0 +1,120 @@
+---
+title: "Project1.Rmd"
+author: "Karl Snyder"
+date: "April 25, 2016"
+output: html_document
+---
+
+# Project 1 from the "Reproducable Research" course.
+
+## Load required packages and data. 
+
+This assumes the datafile is in a subfolder off the working directory
+
+```{r setup, echo = TRUE}
+library(ggplot2);library(plyr) 
+activity <- read.csv("./activity/activity.csv")  
+```
+
+## What is the mean and median total number of steps taken per day?
+
+Use aggregate to get total steps by day, calculate the mean and median values, then create a histogram.
+
+```{r}
+byday <- with(activity, aggregate(steps, by = list(date), FUN = "sum", na.rm = TRUE))
+  x <- byday$x
+    avgstep <- mean(x, na.rm = TRUE)
+    medstep <- median(x, na.rm = TRUE)
+  print("Average");avgstep
+  print("Median"); medstep
+  
+plot.new()
+hist(x,main = "Histogram of Daily Steps",xlab = "Steps", ylab = "Days", col=3)
+abline(v=avgstep, col="red",lty = 3)
+text(x=avgstep,y=25,label="Average",col="red",cex=0.6)
+text(x=avgstep,y=22,label=as.integer(avgstep),col="red",cex=0.6)
+```
+
+## What is the average daily activity pattern?
+
+Use aggregate to get total steps by Interval, determine the interval with with highest average steps, then create a line graph.
+
+```{r}
+byint <- with(activity, aggregate(steps, by = list(interval), 
+                                  FUN = "mean", na.rm = TRUE))
+    names(byint) <- c("interval","steps")
+mstep <- max(byint$steps)
+mint <- byint[byint$steps==mstep,1]
+print("Interval for Max Averages Steps"); mint
+
+plot.new()
+plot(x=byint$interval, y=byint$steps, type = "l",
+     main = "Average Steps by Interval",ylab = "Steps",xlab = "Interval",
+     ylim = c(0,mstep*1.2))
+abline(v=mint, col="red",lty = 3)
+text(x=mint+100,y=mstep,label=mint,col="red")
+```
+
+## Imputing missing values
+
+Calculate the number of missing values
+
+```{r}
+nastep <- sum(is.na(activity$steps))
+print('Missing values');nastep
+```
+
+Replace missing values with interval means, recalculate mean and median, then replot the histogram 
+
+```{r}
+act2 <- join(activity, byint, by="interval", type = "left", match = "all")
+names(act2) <- c("steps","date","interval","avg_steps")
+act2 <- transform(act2, steps= ifelse(is.na(steps),avg_steps,steps))
+
+byday2 <- with(act2, aggregate(steps, by = list(date), FUN = "sum", na.rm = TRUE))
+    x2 <- byday2$x
+    avgstep2 <- mean(x2)
+    medstep2 <- median(x2)
+print("Average");avgstep2
+print("Median"); medstep2
+
+plot.new()
+par(mfrow=c(1,2), mar=c(4,4,2,1), oma = c(0,0,2,0))
+{ hist(x,main = "Exclude Missing Values",xlab = "Steps", ylab = "Days", col=3)
+    abline(v=avgstep, col="red",lty = 3)
+    text(x=avgstep,y=25,label="Average",col="red",cex=0.6)
+    text(x=avgstep,y=22,label=as.integer(avgstep),col="red",cex=0.6)
+  hist(x2,main = "With Imputed Values",xlab = "Steps", ylab = "Days", col=3)
+    abline(v=avgstep2, col="red",lty = 3)
+    text(x=avgstep2,y=30,label="Average",col="red",cex=0.6)
+    text(x=avgstep2,y=27,label=as.integer(avgstep2),col="red",cex=0.6)
+  mtext("Histograms of Daily Steps", outer = TRUE, cex = 2.0)}
+```
+
+## Are there differences in activity patterns between weekdays and weekends?
+
+Create a new factor "weekdays" or "weekends", then create a panel plot that compares activity patterns.
+
+``` {r}
+act2$date <- as.Date(act2$date)
+act2 <- mutate(act2, day = weekdays(act2$date, abbreviate = TRUE))
+act2 <- mutate(act2, wkday = ifelse(day == "Fri" | day == "Sat",
+                                       "Weekend","Weekday"))
+
+byint2 <- with(act2, aggregate(steps, by = list(interval,wkday), 
+                              FUN = "mean", na.rm = TRUE))
+names(byint2) <- c("interval","wkday","steps")
+
+plot.new()
+p <- ggplot(byint2,aes(interval,steps))
+p +
+  geom_point(aes(shape = wkday, color = wkday))+
+  geom_line(aes(linetype = wkday, color = wkday))+
+  facet_grid(wkday~.)+
+  labs( title = "Comparison of Weekday vs Weekend Activity",
+        x = "Interval",
+        y = "Avg Steps")+
+  theme(legend.position="bottom")
+```
+
+

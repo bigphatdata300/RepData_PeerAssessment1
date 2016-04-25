@@ -1,11 +1,6 @@
----
-title: "Project1.Rmd"
-author: "Karl Snyder"
-date: "April 25, 2016"
-output: 
-  html_document:
-    keep_md: true
----
+# Project1.Rmd
+Karl Snyder  
+April 25, 2016  
 
 # Project 1 from the "Reproducable Research" course.
 
@@ -13,8 +8,20 @@ output:
 
 This assumes the datafile is in a subfolder off the working directory
 
-```{r setup, echo = TRUE}
+
+```r
 library(ggplot2);library(plyr)
+```
+
+```
+## Warning: package 'ggplot2' was built under R version 3.2.4
+```
+
+```
+## Warning: package 'plyr' was built under R version 3.2.4
+```
+
+```r
 activity <- read.csv("./activity/activity.csv")  
 ```
 
@@ -22,14 +29,36 @@ activity <- read.csv("./activity/activity.csv")
 
 Use aggregate to get total steps by day, calculate the mean and median values, then create a histogram.
 
-```{r}
+
+```r
 byday <- with(activity, aggregate(steps, by = list(date), FUN = "sum", na.rm = TRUE))
   x <- byday$x
     avgstep <- mean(x, na.rm = TRUE)
     medstep <- median(x, na.rm = TRUE)
   print("Average");avgstep
-  print("Median"); medstep
+```
 
+```
+## [1] "Average"
+```
+
+```
+## [1] 9354.23
+```
+
+```r
+  print("Median"); medstep
+```
+
+```
+## [1] "Median"
+```
+
+```
+## [1] 10395
+```
+
+```r
 plot.new()
 hist(x,main = "Histogram of Daily Steps",xlab = "Steps", ylab = "Days", col=3)
 abline(v=avgstep, col="red",lty = 3)
@@ -37,18 +66,31 @@ text(x=avgstep,y=25,label="Average",col="red",cex=0.6)
 text(x=avgstep,y=22,label=as.integer(avgstep),col="red",cex=0.6)
 ```
 
+![](PA1_files/figure-html/unnamed-chunk-1-1.png)
+
 ## What is the average daily activity pattern?
 
 Use aggregate to get total steps by Interval, determine the interval with with highest average steps, then create a line graph.
 
-```{r}
+
+```r
 byint <- with(activity, aggregate(steps, by = list(interval),
                                   FUN = "mean", na.rm = TRUE))
     names(byint) <- c("interval","steps")
 mstep <- max(byint$steps)
 mint <- byint[byint$steps==mstep,1]
 print("Interval for Max Averages Steps"); mint
+```
 
+```
+## [1] "Interval for Max Averages Steps"
+```
+
+```
+## [1] 835
+```
+
+```r
 plot.new()
 plot(x=byint$interval, y=byint$steps, type = "l",
      main = "Average Steps by Interval",ylab = "Steps",xlab = "Interval",
@@ -57,18 +99,30 @@ abline(v=mint, col="red",lty = 3)
 text(x=mint+100,y=mstep,label=mint,col="red")
 ```
 
+![](PA1_files/figure-html/unnamed-chunk-2-1.png)
+
 ## Imputing missing values
 
 Calculate the number of missing values
 
-```{r}
+
+```r
 nastep <- sum(is.na(activity$steps))
 print('Missing values');nastep
 ```
 
+```
+## [1] "Missing values"
+```
+
+```
+## [1] 2304
+```
+
 Replace missing values with interval means, recalculate mean and median, then replot the histogram
 
-```{r}
+
+```r
 act2 <- join(activity, byint, by="interval", type = "left", match = "all")
 names(act2) <- c("steps","date","interval","avg_steps")
 act2 <- transform(act2, steps= ifelse(is.na(steps),avg_steps,steps))
@@ -78,8 +132,29 @@ byday2 <- with(act2, aggregate(steps, by = list(date), FUN = "sum", na.rm = TRUE
     avgstep2 <- mean(x2)
     medstep2 <- median(x2)
 print("Average");avgstep2
-print("Median"); medstep2
+```
 
+```
+## [1] "Average"
+```
+
+```
+## [1] 10766.19
+```
+
+```r
+print("Median"); medstep2
+```
+
+```
+## [1] "Median"
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 plot.new()
 par(mfrow=c(1,2), mar=c(4,4,2,1), oma = c(0,0,2,0))
 { hist(x,main = "Exclude Missing Values",xlab = "Steps", ylab = "Days", col=3)
@@ -93,11 +168,14 @@ par(mfrow=c(1,2), mar=c(4,4,2,1), oma = c(0,0,2,0))
   mtext("Histograms of Daily Steps", outer = TRUE, cex = 2.0)}
 ```
 
+![](PA1_files/figure-html/unnamed-chunk-4-1.png)
+
 ## Are there differences in activity patterns between weekdays and weekends?
 
 Create a new factor "weekdays" or "weekends", then create a panel plot that compares activity patterns.
 
-``` {r}
+
+```r
 act2$date <- as.Date(act2$date)
 act2 <- mutate(act2, day = weekdays(act2$date, abbreviate = TRUE))
 act2 <- mutate(act2, wkday = ifelse(day == "Fri" | day == "Sat",
@@ -108,6 +186,11 @@ byint2 <- with(act2, aggregate(steps, by = list(interval,wkday),
 names(byint2) <- c("interval","wkday","steps")
 
 plot.new()
+```
+
+![](PA1_files/figure-html/unnamed-chunk-5-1.png)
+
+```r
 p <- ggplot(byint2,aes(interval,steps))
 p +
   geom_point(aes(shape = wkday, color = wkday))+
@@ -118,3 +201,5 @@ p +
         y = "Avg Steps")+
   theme(legend.position="bottom")
 ```
+
+![](PA1_files/figure-html/unnamed-chunk-5-2.png)

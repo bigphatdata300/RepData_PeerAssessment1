@@ -66,7 +66,7 @@ text(x=avgstep,y=25,label="Average",col="red",cex=0.6)
 text(x=avgstep,y=22,label=as.integer(avgstep),col="red",cex=0.6)
 ```
 
-![](PA1_files/figure-html/unnamed-chunk-1-1.png)
+![](PA1_files/figure-html/unnamed-chunk-2-1.png)
 
 ## What is the average daily activity pattern?
 
@@ -99,7 +99,7 @@ abline(v=mint, col="red",lty = 3)
 text(x=mint+100,y=mstep,label=mint,col="red")
 ```
 
-![](PA1_files/figure-html/unnamed-chunk-2-1.png)
+![](PA1_files/figure-html/unnamed-chunk-3-1.png)
 
 ## Imputing missing values
 
@@ -168,7 +168,7 @@ par(mfrow=c(1,2), mar=c(4,4,2,1), oma = c(0,0,2,0))
   mtext("Histograms of Daily Steps", outer = TRUE, cex = 2.0)}
 ```
 
-![](PA1_files/figure-html/unnamed-chunk-4-1.png)
+![](PA1_files/figure-html/unnamed-chunk-5-1.png)
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
@@ -188,7 +188,7 @@ names(byint2) <- c("interval","wkday","steps")
 plot.new()
 ```
 
-![](PA1_files/figure-html/unnamed-chunk-5-1.png)
+![](PA1_files/figure-html/unnamed-chunk-6-1.png)
 
 ```r
 p <- ggplot(byint2,aes(interval,steps))
@@ -202,4 +202,4 @@ p +
   theme(legend.position="bottom")
 ```
 
-![](PA1_files/figure-html/unnamed-chunk-5-2.png)
+![](PA1_files/figure-html/unnamed-chunk-6-2.png)

@@ -13,7 +13,7 @@ output:
 
 This assumes the datafile is in a subfolder off the working directory
 
-```{r setup, echo = TRUE}
+```{r}
 library(ggplot2);library(plyr)
 activity <- read.csv("./activity/activity.csv")  
 ```
